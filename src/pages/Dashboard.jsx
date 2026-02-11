@@ -1,4 +1,5 @@
-import { useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Briefcase, MessageSquare, Users, ChevronRight, Building, MapPin } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
@@ -6,17 +7,45 @@ import AuthContext from '../context/AuthContext';
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
 
-    // Sample data for demonstration
-    const recentJobs = [
-        { id: 1, company: 'Google', role: 'Senior Software Engineer', location: 'Bangalore', postedBy: 'Raj Kumar', posted: '2 days ago' },
-        { id: 2, company: 'Microsoft', role: 'Product Manager', location: 'Hyderabad', postedBy: 'Anita Desai', posted: '4 days ago' },
-        { id: 3, company: 'Amazon', role: 'Data Scientist', location: 'Mumbai', postedBy: 'Vikram Singh', posted: '1 week ago' },
-    ];
+    const [recentJobs, setRecentJobs] = useState([]);
+    const [featuredAlumni, setFeaturedAlumni] = useState([]);
 
-    const featuredAlumni = [
-        { id: 1, name: 'Raj Kumar', company: 'Google', role: 'Senior Engineer', avatar: '👨💻', online: true },
-        { id: 2, name: 'Anita Desai', company: 'Microsoft', role: 'Product Manager', avatar: '👩💼', online: false },
-    ];
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            const config = { headers: { Authorization: `Bearer ${user.token}` } };
+            try {
+                // Fetch Jobs
+                const jobsRes = await axios.get('http://localhost:5000/api/jobs', config);
+                // Get top 3 most recent jobs
+                setRecentJobs(jobsRes.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3));
+
+                // Fetch Users (Alumni)
+                const usersRes = await axios.get('http://localhost:5000/api/users', config);
+                // Filter alumni and get top 2
+                const alumni = usersRes.data.filter(u => u.role === 'alumni').slice(0, 2);
+                setFeaturedAlumni(alumni);
+            } catch (error) {
+                console.error("Error fetching dashboard data", error);
+            }
+        };
+
+        fetchDashboardData();
+    }, [user.token]);
+
+    const getTimeAgo = (date) => {
+        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return Math.floor(seconds) + " seconds ago";
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 body-font">
@@ -36,7 +65,7 @@ const Dashboard = () => {
                             <Briefcase size={28} />
                             <span className="text-blue-100 text-sm font-medium">This Week</span>
                         </div>
-                        <div className="text-3xl font-bold mb-1">12</div>
+                        <div className="text-3xl font-bold mb-1">{recentJobs.length}</div>
                         <div className="text-blue-100">New Job Postings</div>
                     </div>
 
@@ -77,34 +106,38 @@ const Dashboard = () => {
                             </div>
 
                             <div className="space-y-4">
-                                {recentJobs.map((job) => (
-                                    <div key={job.id} className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <h4 className="font-semibold text-gray-900 mb-1">{job.role}</h4>
-                                                <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                    <span className="flex items-center gap-1">
-                                                        <Building size={14} />
-                                                        {job.company}
-                                                    </span>
-                                                    <span className="flex items-center gap-1">
-                                                        <MapPin size={14} />
-                                                        {job.location}
-                                                    </span>
+                                {recentJobs.length > 0 ? (
+                                    recentJobs.map((job) => (
+                                        <div key={job._id} className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <h4 className="font-semibold text-gray-900 mb-1">{job.title}</h4>
+                                                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                        <span className="flex items-center gap-1">
+                                                            <Building size={14} />
+                                                            {job.company}
+                                                        </span>
+                                                        <span className="flex items-center gap-1">
+                                                            <MapPin size={14} />
+                                                            {job.location}
+                                                        </span>
+                                                    </div>
                                                 </div>
+                                                <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                                    {getTimeAgo(job.createdAt)}
+                                                </span>
                                             </div>
-                                            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                                                {job.posted}
-                                            </span>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-gray-500">Posted by {job.user?.name || 'Alumni'}</span>
+                                                <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                                                    Apply →
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs text-gray-500">Posted by {job.postedBy}</span>
-                                            <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                                Apply →
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-center">No recent jobs found.</p>
+                                )}
                             </div>
                         </div>
 
@@ -115,30 +148,31 @@ const Dashboard = () => {
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {featuredAlumni.map((person) => (
-                                    <div key={person.id} className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="relative">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-2xl">
-                                                    {person.avatar}
+                                {featuredAlumni.length > 0 ? (
+                                    featuredAlumni.map((person) => (
+                                        <div key={person._id} className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="relative">
+                                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-2xl font-bold text-white">
+                                                        {person.name.charAt(0).toUpperCase()}
+                                                    </div>
                                                 </div>
-                                                {person.online && (
-                                                    <div className="absolute -bottom-1 -right-1 status-online"></div>
-                                                )}
+                                                <div className="min-w-0">
+                                                    <h4 className="font-semibold text-gray-900 truncate">{person.name}</h4>
+                                                    <p className="text-sm text-gray-600 truncate">{person.currentRole || 'Alumni'}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="font-semibold text-gray-900">{person.name}</h4>
-                                                <p className="text-sm text-gray-600">{person.role}</p>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-gray-600 truncate">{person.company || 'N/A'}</span>
+                                                <button className="text-blue-600 hover:text-blue-700 font-medium">
+                                                    Connect
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-gray-600">{person.company}</span>
-                                            <button className="text-blue-600 hover:text-blue-700 font-medium">
-                                                Connect
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-center col-span-2">No alumni found.</p>
+                                )}
                             </div>
                         </div>
                     </div>
