@@ -13,11 +13,11 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            await login(email, password);
+        const result = await login(email, password);
+        if (result.success) {
             navigate('/');
-        } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+        } else {
+            setError(result.message);
         }
     };
 

@@ -244,17 +244,17 @@ const Register = () => {
                         </div>
                     )}
 
-                    {/* Step 3: Email Verification */}
+                    {/* Step 3: Admin Approval */}
                     {step === 3 && (
                         <div className="space-y-6 text-center animate-scale-in">
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                                <Mail className="text-green-600" size={40} />
+                            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+                                <CheckCircle className="text-yellow-600" size={40} />
                             </div>
 
-                            <h3 className="text-xl font-semibold text-gray-900">Verify Your Email</h3>
+                            <h3 className="text-xl font-semibold text-gray-900">Registration Successful!</h3>
                             <p className="text-gray-600">
-                                We've sent a verification link to your college email.<br />
-                                Please check your inbox and click the link to activate your account.
+                                Your account has been created and is pending admin approval.<br />
+                                You will be able to log in once an administrator verifies your account.
                             </p>
 
                             <button
