@@ -97,6 +97,7 @@ const Navbar = () => {
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center gap-1">
                             <Link to="/" className={`nav-link ${isActive('/') ? 'nav-link-active' : 'nav-link-inactive'}`}>Home</Link>
+                            <Link to="/events" className={`nav-link ${isActive('/events') ? 'nav-link-active' : 'nav-link-inactive'}`}>Events</Link>
                             <Link to="/jobs" className={`nav-link ${isActive('/jobs') ? 'nav-link-active' : 'nav-link-inactive'}`}>Jobs</Link>
                             <Link to="/directory" className={`nav-link ${isActive('/directory') ? 'nav-link-active' : 'nav-link-inactive'}`}>Directory</Link>
                             <Link to="/chat" className={`nav-link ${isActive('/chat') ? 'nav-link-active' : 'nav-link-inactive'}`}>Messages</Link>
