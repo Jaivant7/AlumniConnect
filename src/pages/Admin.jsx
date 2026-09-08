@@ -39,7 +39,7 @@ const Admin = () => {
             console.error('Error fetching complaints:', error);
         }
     };
-
+    // hi this is for checking the code is working or not
     const fetchAllUsers = async () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
